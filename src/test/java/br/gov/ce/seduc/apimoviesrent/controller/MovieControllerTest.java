@@ -7,11 +7,17 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,15 +33,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import br.gov.ce.seduc.apimoviesrent.config.security.AuthService;
+import br.gov.ce.seduc.apimoviesrent.config.security.Session;
 import br.gov.ce.seduc.apimoviesrent.model.dtos.CastDTO;
 import br.gov.ce.seduc.apimoviesrent.model.dtos.LabelDTO;
 import br.gov.ce.seduc.apimoviesrent.model.dtos.MovieDTO;
+import br.gov.ce.seduc.apimoviesrent.model.exceptions.BusinessException;
 import br.gov.ce.seduc.apimoviesrent.service.CastService;
 import br.gov.ce.seduc.apimoviesrent.service.MovieService;
 
@@ -43,10 +56,17 @@ import br.gov.ce.seduc.apimoviesrent.service.MovieService;
 @DisplayName("Movies Resource unit tests")
 public class MovieControllerTest {
 	
-	static long MOVIE_ID = 1l;
+	static String MOVIE_NOT_AVAILABLE = "Movie isnt available for rent";
 	
+	static Long MOVIE_ID = 1l;
+	static String MOVIE_NAME = "Parasite";
+	static String MOVIE_CATEGORY_THRILLER = "Thriller";
+	static String MOVIE_DIRECTOR_NAME = "Bong joon-ho";
+	static LabelDTO DIRECTOR_AND_WRITER = new LabelDTO(1l, MOVIE_DIRECTOR_NAME);
+		
 	@Mock MovieService movieService;
 	@Mock CastService castService;
+	@Mock AuthService authService;
 	
 	MockMvc mockMvc;
 	
@@ -55,7 +75,7 @@ public class MovieControllerTest {
 	@BeforeEach
 	public void beforeEach() {
 		mockMvc = standaloneSetup( 
-			new MovieContoller( movieService, castService ) 
+			new MovieContoller( movieService, castService, authService ) 
 		);
 	}
 	
@@ -94,15 +114,13 @@ public class MovieControllerTest {
 	@Test
 	@DisplayName("Shoud retrieve a movie by its id")
 	public void shouldRetrieveAMovieByItsId() throws Exception {
-		String bongJoonHo = "Bong joon-ho";
-		LabelDTO directorAndWriter = new LabelDTO(1l, bongJoonHo);
 		MovieDTO movie = 
 			MovieDTO
 				.builder()
 					.id(MOVIE_ID)
 					.name("Parasite")
-					.director(directorAndWriter)
-					.screenwriter(directorAndWriter)
+					.director(DIRECTOR_AND_WRITER)
+					.screenwriter(DIRECTOR_AND_WRITER)
 				.build();
 		
 		when(movieService.findById(MOVIE_ID)).thenReturn(Optional.of(movie));
@@ -110,8 +128,8 @@ public class MovieControllerTest {
 		mockMvc
 			.perform(get( format("%s/%d", MOVIES, MOVIE_ID) ))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.director.name", is(bongJoonHo)))
-			.andExpect(jsonPath("$.screenwriter.name", is(bongJoonHo)));
+			.andExpect(jsonPath("$.director.name", is(MOVIE_DIRECTOR_NAME)))
+			.andExpect(jsonPath("$.screenwriter.name", is(MOVIE_DIRECTOR_NAME)));
 		
 	}
 	
@@ -124,6 +142,73 @@ public class MovieControllerTest {
 			.perform(get( format("%s/%d", MOVIES, MOVIE_ID) ))
 			.andExpect(status().isNotFound());
 	}
+	
+	@Test
+	@DisplayName("Should return bad request if no category is selected when registering a movie")
+	public void shouldReturnBadRequestIfNoCategoryIsSelected() throws JsonProcessingException, Exception {
+		MovieDTO movie = 
+			MovieDTO.builder()
+				.name(MOVIE_NAME)
+				.director(DIRECTOR_AND_WRITER)
+				.screenwriter(DIRECTOR_AND_WRITER)
+			.build();
+		
+		mockMvc.perform(
+			post(MOVIES).contentType(APPLICATION_JSON).content(new ObjectMapper().writeValueAsBytes(movie))
+		).andExpect(status().isBadRequest());
+		
+		verify(movieService, never()).save(movie);
+	}
+	
+	@Test
+	@DisplayName("Should return bad request if the movie is already rented")
+	public void shouldReturnBadRequestIfMovieIsAlreadyRented() throws JsonProcessingException, Exception {
+		
+		final Session session = Session.builder().id(1l).username("dattebayoRob").build();
+		final MovieDTO movie = validMovie();
+		movie.setId(MOVIE_ID);
+		
+		when( authService.activeSession() ).thenReturn( session );
+		when( movieService.findById(MOVIE_ID) ).thenReturn( Optional.of(movie ) );
+		doThrow(new BusinessException(MOVIE_NOT_AVAILABLE)).when( movieService ).rentMovie( MOVIE_ID, session.getId() );
+		
+		mockMvc
+			.perform( 
+				patch( format( "%s/%d/rent", MOVIES, MOVIE_ID ) )
+			)
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message", is(MOVIE_NOT_AVAILABLE)));
+		
+		InOrder inOrder = inOrder(movieService, authService);
+		
+		inOrder.verify(movieService, times(1)).findById(MOVIE_ID);
+		inOrder.verify(authService, times(1)).activeSession();
+		inOrder.verify(movieService, times(1)).rentMovie(MOVIE_ID, session.getId());		
+	}
+	
+	@Test
+	@DisplayName("Should insert a movie if all bean validation pass and no business exception is thrown")
+	public void shouldInsertAMovie() throws JsonProcessingException, Exception {
+		final MovieDTO movie = validMovie();
+		
+		when(movieService.save(Mockito.any(MovieDTO.class))).thenAnswer( 
+		  invocation -> {
+			  MovieDTO movieRequestedToSave = invocation.getArgument(0);
+			  movieRequestedToSave.setId(MOVIE_ID);
+			  return Optional.of(movieRequestedToSave);
+		  }
+		);
+		
+		mockMvc.perform(
+			post(MOVIES).contentType(APPLICATION_JSON).content(new ObjectMapper().writeValueAsBytes(movie))
+		)
+		.andExpect(status().isCreated())
+		.andExpect(header().exists("Location"))
+		.andExpect(jsonPath("$.id", is(MOVIE_ID.intValue())));
+		
+		verify(movieService, times(1)).save(Mockito.any(MovieDTO.class));
+	}
+	
 	
 	@Test
 	@DisplayName("Should Return All Cast Of a Movie")
@@ -160,6 +245,15 @@ public class MovieControllerTest {
 		inOrder.verify(movieService, times(1)).findById(MOVIE_ID);
 		inOrder.verify(castService, never()).findByMovie(MOVIE_ID);
 		
+	}
+	
+	MovieDTO validMovie() {
+		return MovieDTO.builder()
+				.name(MOVIE_NAME)
+				.director(DIRECTOR_AND_WRITER)
+				.screenwriter(DIRECTOR_AND_WRITER)
+				.categories(new HashSet<>(asList(MOVIE_CATEGORY_THRILLER)))
+			.build();
 	}
 	
 }
