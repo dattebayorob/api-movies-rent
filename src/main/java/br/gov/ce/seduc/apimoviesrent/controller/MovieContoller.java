@@ -15,12 +15,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.gov.ce.seduc.apimoviesrent.config.security.AuthService;
@@ -60,14 +63,31 @@ public class MovieContoller {
 					.orElseGet( notFound()::build );
 	}
 	
+	@PutMapping("{movieId}")
+	public ResponseEntity<MovieDTO>  updateMovie( 
+		@PathVariable("movieId") Long movieId, 
+		@RequestBody @Validated MovieDTO movie 
+	) {
+		
+		movie.setId(movieId);
+		
+		return movieService.update(movie)
+				.map( ResponseEntity::ok )
+				.orElseGet( notFound()::build );
+	}
+	
 	@PatchMapping("{movieId}/rent")
 	public ResponseEntity<Void> rentMovie( @PathVariable("movieId") Long movieId ) {
-		return findById(movieId)
-					.map( movie -> {
-						movieService.rentMovie(movieId, authService.activeSession().getId());
-						return new ResponseEntity<Void>(ACCEPTED);
-					})
+		return movieService.rentMovie(movieId, authService.activeSession().getId())
+					.map( movie -> new ResponseEntity<Void>(ACCEPTED) )
 					.orElseGet( notFound()::build );
+	}
+	
+	@DeleteMapping("{movieId}/rent")
+	public ResponseEntity<Void> returnMovie( @PathVariable("movieId") Long movieId, @RequestParam("userId") Long userId ) {
+		return movieService.returnMovie(movieId, userId)
+				.map( movie -> new ResponseEntity<Void>(ACCEPTED) )
+				.orElseGet( notFound()::build );
 	}
 	
 	@GetMapping("{movieId}/castings")
@@ -81,6 +101,4 @@ public class MovieContoller {
 	private Optional<MovieDTO> findById(Long movieId) {
 		return ofNullable(movieId).flatMap( movieService::findById );
 	}
-	
-	
 }

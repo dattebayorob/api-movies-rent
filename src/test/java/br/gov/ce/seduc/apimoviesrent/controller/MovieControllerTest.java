@@ -14,6 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -165,11 +166,8 @@ public class MovieControllerTest {
 	public void shouldReturnBadRequestIfMovieIsAlreadyRented() throws JsonProcessingException, Exception {
 		
 		final Session session = Session.builder().id(1l).username("dattebayoRob").build();
-		final MovieDTO movie = validMovie();
-		movie.setId(MOVIE_ID);
 		
 		when( authService.activeSession() ).thenReturn( session );
-		when( movieService.findById(MOVIE_ID) ).thenReturn( Optional.of(movie ) );
 		doThrow(new BusinessException(MOVIE_NOT_AVAILABLE)).when( movieService ).rentMovie( MOVIE_ID, session.getId() );
 		
 		mockMvc
@@ -181,7 +179,6 @@ public class MovieControllerTest {
 		
 		InOrder inOrder = inOrder(movieService, authService);
 		
-		inOrder.verify(movieService, times(1)).findById(MOVIE_ID);
 		inOrder.verify(authService, times(1)).activeSession();
 		inOrder.verify(movieService, times(1)).rentMovie(MOVIE_ID, session.getId());		
 	}
@@ -245,6 +242,23 @@ public class MovieControllerTest {
 		inOrder.verify(movieService, times(1)).findById(MOVIE_ID);
 		inOrder.verify(castService, never()).findByMovie(MOVIE_ID);
 		
+	}
+	
+	@Test
+	@DisplayName("Should return accepted when returning a movie")
+	public void shouldReturnStatusAcceptedWhenReturningAMovie() throws Exception {
+		
+		final Long userId = 3l;
+		
+		when(movieService.returnMovie(MOVIE_ID, userId)).thenReturn(Optional.of(validMovie()));
+				
+		mockMvc
+			.perform( 
+				delete( format( "%s/%d/rent", MOVIES, MOVIE_ID ) ).param("userId", userId.toString()) 
+			)
+			.andExpect(status().isAccepted());
+		
+		verify( movieService, times(1) ).returnMovie(MOVIE_ID, userId);
 	}
 	
 	MovieDTO validMovie() {

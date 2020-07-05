@@ -11,5 +11,7 @@ public interface MovieService {
 	public Page<MovieDTO> findMovies(Pageable pageable);
 	public Optional<MovieDTO> findById(Long movieId);
 	public Optional<MovieDTO> save(MovieDTO movie);
-	public void rentMovie( Long movieId, Long userId );
+	public Optional<MovieDTO> update(MovieDTO movie);
+	public Optional<MovieDTO> rentMovie( Long movieId, Long userId );
+	public Optional<MovieDTO> returnMovie( Long movieId, Long userId );
 }
