@@ -1,6 +1,10 @@
 package br.gov.ce.seduc.apimoviesrent.config.security;
 
 import static br.gov.ce.seduc.apimoviesrent.model.constants.Roles.ADMIN;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PATCH;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import java.util.Arrays;
@@ -10,7 +14,6 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -27,7 +30,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	
-	private static final String MOVIES =  "/movies/**"; 
+	private static final String MOVIES =  "/movies"; 
+	private static final String USERS = "/users/**";
 	
 	private final MockAuthenticationByHeaderFilter authenticationfilter;
 	
@@ -49,11 +53,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests( 
 					authorizeRequests -> authorizeRequests
-						.antMatchers(HttpMethod.GET, MOVIES).permitAll()
-						.antMatchers(HttpMethod.POST, MOVIES).hasRole(ADMIN)
-						.antMatchers(HttpMethod.DELETE, MOVIES).hasRole(ADMIN)
-						.antMatchers(HttpMethod.PATCH, MOVIES).hasRole(ADMIN)
-						.antMatchers(HttpMethod.PATCH, MOVIES).authenticated()
+						.antMatchers(GET, MOVIES+"/**").permitAll()
+						.antMatchers(POST, MOVIES+"/**").hasRole(ADMIN)
+						.antMatchers(DELETE, MOVIES+"/**").hasRole(ADMIN)
+						.antMatchers(PATCH, MOVIES+"/*/rent").authenticated()
+						.antMatchers(GET, USERS).authenticated()
 						.anyRequest().denyAll()
 				)
 				.csrf(CsrfConfigurer::disable)
