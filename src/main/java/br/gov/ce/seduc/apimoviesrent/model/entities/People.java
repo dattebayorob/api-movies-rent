@@ -22,8 +22,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode( of = { "id" } )
-@Table
-@Entity( name = "tb_people" )
+@Entity
+@Table( name = "tb_people" )
 public class People {
 	
 	public People(Long id) {

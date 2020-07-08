@@ -10,6 +10,7 @@ import java.util.function.Function;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,12 +36,19 @@ public class ApplicationControllerAdvice {
 		return new ResponseError(ex.getMessage(), ex.getErrors());
 	}
 	
+	@ResponseStatus( code = BAD_REQUEST )
+	@ExceptionHandler( MissingServletRequestParameterException.class )
+	public ResponseError handleMissingServletRequestParameterException( MissingServletRequestParameterException ex) {
+		return new ResponseError(String.format("Required '%s' parameter '%s' is not present", ex.getParameterType(), ex.getParameterName()));
+	}
+	
 	@ResponseStatus( code = INTERNAL_SERVER_ERROR )
 	@ExceptionHandler( RuntimeException.class )
 	public ResponseError handleRuntimeException( RuntimeException ex ) {
 		log.error("{}", ex);
 		return new ResponseError("Unespected Error");
 	}
+	
 	
 	private Set<ErrorDTO> mapBindingResultsToErrors( BindingResult bindingResult ) {
 		return bindingResult.getFieldErrors().stream().map(mapFieldErrorToErrorDTO()).collect(toSet());

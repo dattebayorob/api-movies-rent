@@ -31,8 +31,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	
-	private static final String MOVIES =  "/movies"; 
+	private static final String MOVIES =  "/movies";
+	private static final String CATEGORIES = "/categories";
 	private static final String USERS = "/users/**";
+	private static final String PEOPLES = "/peoples";
 	
 	private final MockAuthenticationByHeaderFilter authenticationfilter;
 	
@@ -60,6 +62,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 						.antMatchers(PUT, MOVIES+"/**").hasRole(ADMIN)
 						.antMatchers(PATCH, MOVIES+"/*/rent").authenticated()
 						.antMatchers(GET, USERS).authenticated()
+						.antMatchers(GET, CATEGORIES+"/**").authenticated()
+						.antMatchers(GET, PEOPLES+"/**").authenticated()
 						.anyRequest().denyAll()
 				)
 				.csrf(CsrfConfigurer::disable)
