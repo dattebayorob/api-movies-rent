@@ -5,6 +5,7 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -56,6 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 						.antMatchers(GET, MOVIES+"/**").permitAll()
 						.antMatchers(POST, MOVIES+"/**").hasRole(ADMIN)
 						.antMatchers(DELETE, MOVIES+"/**").hasRole(ADMIN)
+						.antMatchers(PUT, MOVIES+"/**").hasRole(ADMIN)
 						.antMatchers(PATCH, MOVIES+"/*/rent").authenticated()
 						.antMatchers(GET, USERS).authenticated()
 						.anyRequest().denyAll()
