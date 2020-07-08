@@ -2,6 +2,7 @@
 
 ## Inicialização via Docker Compose
 docker network create net_app
+
 docker-compose up --build
 
 ## Tecnologias Utilizadas 
