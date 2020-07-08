@@ -1,7 +1,5 @@
 package br.gov.ce.seduc.apimoviesrent.model.entities;
 
-import static javax.persistence.CascadeType.MERGE;
-import static javax.persistence.CascadeType.PERSIST;
 import static javax.persistence.FetchType.LAZY;
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -36,7 +34,7 @@ public class Movie {
 	@ManyToOne( fetch = LAZY ) 
 	@JoinColumn( name = "screenwriter_id" )
 	private People screenwriter;
-	@ManyToMany( cascade = { MERGE, PERSIST })
+	@ManyToMany
 	@JoinTable( 
 		name = "tb_movie_cast", 
 		joinColumns = @JoinColumn( name = "movie_id" ), 
@@ -44,7 +42,7 @@ public class Movie {
 	)
 	private Set<People> castings;
 	
-	@ManyToMany( cascade = { MERGE, PERSIST })
+	@ManyToMany
 	@JoinTable( 
 		name = "tb_movie_category", 
 		joinColumns = @JoinColumn( name = "movie_id" ), 
