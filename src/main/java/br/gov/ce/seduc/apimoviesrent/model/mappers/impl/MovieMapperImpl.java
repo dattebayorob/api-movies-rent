@@ -31,6 +31,7 @@ public class MovieMapperImpl implements MovieMapper{
 				.castings( toCastings(movie.getCastings()) )
 				.categories( toCategoriesDTO( movie.getCategories()))
 				.quantity( movie.getQuantity() )
+				.pictureUrl( movie.getPicturePath() )
 			.build();
 				
 	}
@@ -44,6 +45,7 @@ public class MovieMapperImpl implements MovieMapper{
 		entity.setScreenwriter( new People( movie.getScreenwriter().getId()));
 		entity.setCategories( toCategories( movie.getCategories()) );
 		entity.setQuantity( movie.getQuantity() );
+		entity.setPicturePath( movie.getPictureUrl() );
 		return entity;
 	}
 

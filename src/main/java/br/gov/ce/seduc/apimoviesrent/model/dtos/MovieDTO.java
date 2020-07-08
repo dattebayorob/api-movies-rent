@@ -28,6 +28,7 @@ public class MovieDTO {
 	private Long id;
 	@NotEmpty( message = "The movie name must be informed" )
 	private String name;
+	private String pictureUrl;
 	@Default
 	@CollectionSizeRequired( min = 1, message = "At least one category must be informed" )
 	private Set<LabelDTO> categories = emptySet();

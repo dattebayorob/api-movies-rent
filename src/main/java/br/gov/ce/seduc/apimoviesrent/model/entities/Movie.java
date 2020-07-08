@@ -5,6 +5,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -28,6 +29,9 @@ public class Movie {
 	private Long id;
 	
 	private String name;
+	@Column(name = "picture_path")
+	private String picturePath;
+	
 	@ManyToOne( fetch = LAZY )
 	@JoinColumn( name = "director_id" )
 	private People director;
