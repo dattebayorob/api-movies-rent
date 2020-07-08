@@ -8,8 +8,8 @@ import org.springframework.data.domain.Pageable;
 import br.gov.ce.seduc.apimoviesrent.model.dtos.MovieDTO;
 
 public interface MovieService {
-	public Page<MovieDTO> findMovies(Pageable pageable);
-	public Optional<MovieDTO> findById(Long movieId);
+	public Page<MovieDTO> findMovies(Pageable pageable, Long userId);
+	public Optional<MovieDTO> findById(Long movieId, Long userId);
 	public Optional<MovieDTO> save(MovieDTO movie);
 	public Optional<MovieDTO> update(MovieDTO movie);
 	public Optional<MovieDTO> rentMovie( Long movieId, Long userId );
