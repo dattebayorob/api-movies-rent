@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+  app:
+    container_name: api-movies-rent
+    depends_on:
+      - postgres
+    build: .
+    environment:
+      - TZ=America/Fortaleza
+    ports:
+      - "8080:8080"
+    networks:
+      - net_app
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - net_app
+networks:
+  net_app:
+    external: true
