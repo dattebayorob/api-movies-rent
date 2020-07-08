@@ -61,10 +61,10 @@ class MovieRentServiceTest {
 	@DisplayName(" Should return true, the movie is rented by the informed user")
 	public void shouldReturnTrueToTheMovieAndUserIds() {
 		
-		when( movieRentRepository.existesByIdMovieIdAndIdUserIdAndReturnDateIsNull(MOVIE_ID, USER_ID) )
+		when( movieRentRepository.existsByIdMovieIdAndIdUserIdAndReturnDateIsNull(MOVIE_ID, USER_ID) )
 			.thenReturn(TRUE);
 		assertTrue( movieRentService.isMovieRentedByUser(MOVIE_ID, USER_ID) );
-		verify( movieRentRepository, times(1)).existesByIdMovieIdAndIdUserIdAndReturnDateIsNull(MOVIE_ID, USER_ID);
+		verify( movieRentRepository, times(1)).existsByIdMovieIdAndIdUserIdAndReturnDateIsNull(MOVIE_ID, USER_ID);
 		
 	}
 	

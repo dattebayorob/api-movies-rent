@@ -23,7 +23,7 @@ public class MovieRentServiceImpl implements MovieRentService{
 
 	@Override
 	public boolean isMovieRentedByUser( Long movieId, Long userId ) {
-		return repository.existesByIdMovieIdAndIdUserIdAndReturnDateIsNull( movieId, userId );
+		return repository.existsByIdMovieIdAndIdUserIdAndReturnDateIsNull( movieId, userId );
 	}
 
 	@Override

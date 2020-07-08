@@ -64,7 +64,7 @@ public class MovieControllerTest {
 	
 	static Long MOVIE_ID = 1l;
 	static String MOVIE_NAME = "Parasite";
-	static String MOVIE_CATEGORY_THRILLER = "Thriller";
+	static LabelDTO MOVIE_CATEGORY_THRILLER = new LabelDTO(1l, "Thriller");
 	static String MOVIE_DIRECTOR_NAME = "Bong joon-ho";
 	static LabelDTO DIRECTOR_AND_WRITER = new LabelDTO(1l, MOVIE_DIRECTOR_NAME);
 		
