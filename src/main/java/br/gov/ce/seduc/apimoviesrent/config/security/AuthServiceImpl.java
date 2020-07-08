@@ -17,7 +17,7 @@ public class AuthServiceImpl implements AuthService{
 			.map(Authentication::getDetails)
 			.filter(details -> details instanceof User)
 			.map( user -> (User) user)
-			.map( user -> new Session( user.getId(), user.getName() ))
+			.map( user -> new Session( user.getId(), user.getName(), user.getRole().toString() ))
 			.orElseGet(Session::new);
 	}
 
