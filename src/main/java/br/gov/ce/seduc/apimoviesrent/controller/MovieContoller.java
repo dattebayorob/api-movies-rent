@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.ResponseEntity.created;
 import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.unprocessableEntity;
@@ -44,7 +45,7 @@ public class MovieContoller {
 	
 	@GetMapping
 	public Page<MovieDTO> getMovies( Pageable pageable ) {
-		return movieService.findMovies( pageable );
+		return movieService.findMovies( pageable, authService.activeSession().getId() );
 	}
 	
 	@PostMapping
@@ -86,7 +87,7 @@ public class MovieContoller {
 	@DeleteMapping("{movieId}/rent")
 	public ResponseEntity<Void> returnMovie( @PathVariable("movieId") Long movieId, @RequestParam("userId") Long userId ) {
 		return movieService.returnMovie(movieId, userId)
-				.map( movie -> new ResponseEntity<Void>(ACCEPTED) )
+				.map( movie -> new ResponseEntity<Void>(NO_CONTENT) )
 				.orElseGet( notFound()::build );
 	}
 	
@@ -99,6 +100,6 @@ public class MovieContoller {
 	}
 	
 	private Optional<MovieDTO> findById(Long movieId) {
-		return ofNullable(movieId).flatMap( movieService::findById );
+		return ofNullable(movieId).flatMap( id -> movieService.findById( id, authService.activeSession().getId() ));
 	}
 }

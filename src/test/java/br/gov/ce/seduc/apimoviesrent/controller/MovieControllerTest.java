@@ -59,6 +59,9 @@ public class MovieControllerTest {
 	
 	static String MOVIE_NOT_AVAILABLE = "Movie isnt available for rent";
 	
+	static Long USER_ID = 3l;
+	static String USERNAME = "dattebayorob";
+	
 	static Long MOVIE_ID = 1l;
 	static String MOVIE_NAME = "Parasite";
 	static String MOVIE_CATEGORY_THRILLER = "Thriller";
@@ -87,7 +90,9 @@ public class MovieControllerTest {
 		MovieDTO movie = MovieDTO.builder().id(1l).build();
 		List<MovieDTO> movies = asList(movie);
 		
-		when(movieService.findMovies(pageable)).thenReturn(
+		when( authService.activeSession() ).thenReturn( activeSession() );
+		
+		when(movieService.findMovies(pageable, USER_ID)).thenReturn(
 			new PageImpl<>(movies, pageable, pageable.getPageSize())
 		);
 		
@@ -103,7 +108,9 @@ public class MovieControllerTest {
 		pageable = PageRequest.of(0, 20);
 		List<MovieDTO> movies = emptyList();
 		
-		when(movieService.findMovies(pageable)).thenReturn( new PageImpl<>(movies) );
+		when( authService.activeSession() ).thenReturn( activeSession() );
+		
+		when(movieService.findMovies(pageable, USER_ID)).thenReturn( new PageImpl<>(movies) );
 		
 		mockMvc
 			.perform(get(MOVIES))
@@ -124,7 +131,9 @@ public class MovieControllerTest {
 					.screenwriter(DIRECTOR_AND_WRITER)
 				.build();
 		
-		when(movieService.findById(MOVIE_ID)).thenReturn(Optional.of(movie));
+		when( authService.activeSession() ).thenReturn( activeSession() );
+		
+		when(movieService.findById(MOVIE_ID, USER_ID)).thenReturn(Optional.of(movie));
 		
 		mockMvc
 			.perform(get( format("%s/%d", MOVIES, MOVIE_ID) ))
@@ -137,7 +146,10 @@ public class MovieControllerTest {
 	@Test
 	@DisplayName("Should return a not found status if no movie is found for the Id")
 	public void shouldReturnNotFound() throws Exception {
-		when(movieService.findById(MOVIE_ID)).thenReturn(Optional.empty());
+		
+		when( authService.activeSession() ).thenReturn( activeSession() );
+		
+		when(movieService.findById(MOVIE_ID, USER_ID)).thenReturn(Optional.empty());
 
 		mockMvc
 			.perform(get( format("%s/%d", MOVIES, MOVIE_ID) ))
@@ -164,11 +176,9 @@ public class MovieControllerTest {
 	@Test
 	@DisplayName("Should return bad request if the movie is already rented")
 	public void shouldReturnBadRequestIfMovieIsAlreadyRented() throws JsonProcessingException, Exception {
-		
-		final Session session = Session.builder().id(1l).username("dattebayoRob").build();
-		
-		when( authService.activeSession() ).thenReturn( session );
-		doThrow(new BusinessException(MOVIE_NOT_AVAILABLE)).when( movieService ).rentMovie( MOVIE_ID, session.getId() );
+				
+		when( authService.activeSession() ).thenReturn( activeSession() );
+		doThrow(new BusinessException(MOVIE_NOT_AVAILABLE)).when( movieService ).rentMovie( MOVIE_ID, USER_ID );
 		
 		mockMvc
 			.perform( 
@@ -180,7 +190,7 @@ public class MovieControllerTest {
 		InOrder inOrder = inOrder(movieService, authService);
 		
 		inOrder.verify(authService, times(1)).activeSession();
-		inOrder.verify(movieService, times(1)).rentMovie(MOVIE_ID, session.getId());		
+		inOrder.verify(movieService, times(1)).rentMovie(MOVIE_ID, USER_ID );		
 	}
 	
 	@Test
@@ -215,7 +225,9 @@ public class MovieControllerTest {
 			Arrays.asList( new CastDTO(1l, "Brad Peet"), new CastDTO(2l, "Tom Cruize") )
 		);
 		
-		when(movieService.findById(MOVIE_ID)).thenReturn(Optional.of(movie));
+		when( authService.activeSession() ).thenReturn( activeSession() );
+		
+		when(movieService.findById(MOVIE_ID, USER_ID)).thenReturn(Optional.of(movie));
 		when(castService.findByMovie(MOVIE_ID)).thenReturn(castings);
 		
 		mockMvc
@@ -224,7 +236,7 @@ public class MovieControllerTest {
 			.andExpect(jsonPath("$", hasSize(2)));
 		
 		InOrder inOrder = inOrder(castService, movieService);
-		inOrder.verify(movieService, times(1)).findById(MOVIE_ID);
+		inOrder.verify(movieService, times(1)).findById(MOVIE_ID, USER_ID);
 		inOrder.verify(castService, times(1)).findByMovie(MOVIE_ID);
 		
 	}
@@ -232,21 +244,24 @@ public class MovieControllerTest {
 	@Test
 	@DisplayName("Should return status 404 when retrieving castings of a movie if movie is not found by id")
 	public void shouldReturnStatusNotFoundWhenRetrievingCastingsAndMovieIsNotFound() throws Exception {
-		when(movieService.findById(MOVIE_ID)).thenReturn(Optional.empty());
+		
+		when( authService.activeSession() ).thenReturn( activeSession() );
+
+		when(movieService.findById(MOVIE_ID, USER_ID)).thenReturn(Optional.empty());
 		
 		mockMvc
 		.perform(get( format("%s/%d/castings", MOVIES, MOVIE_ID) ))
 		.andExpect(status().isNotFound());
 		
 		InOrder inOrder = inOrder(castService, movieService);
-		inOrder.verify(movieService, times(1)).findById(MOVIE_ID);
+		inOrder.verify(movieService, times(1)).findById(MOVIE_ID, USER_ID);
 		inOrder.verify(castService, never()).findByMovie(MOVIE_ID);
 		
 	}
 	
 	@Test
-	@DisplayName("Should return accepted when returning a movie")
-	public void shouldReturnStatusAcceptedWhenReturningAMovie() throws Exception {
+	@DisplayName("Should return http status no content  when returning a movie")
+	public void shouldReturnStatusNoContentWhenReturningAMovie() throws Exception {
 		
 		final Long userId = 3l;
 		
@@ -256,7 +271,7 @@ public class MovieControllerTest {
 			.perform( 
 				delete( format( "%s/%d/rent", MOVIES, MOVIE_ID ) ).param("userId", userId.toString()) 
 			)
-			.andExpect(status().isAccepted());
+			.andExpect(status().isNoContent());
 		
 		verify( movieService, times(1) ).returnMovie(MOVIE_ID, userId);
 	}
@@ -267,6 +282,12 @@ public class MovieControllerTest {
 				.director(DIRECTOR_AND_WRITER)
 				.screenwriter(DIRECTOR_AND_WRITER)
 				.categories(new HashSet<>(asList(MOVIE_CATEGORY_THRILLER)))
+			.build();
+	}
+	
+	Session activeSession() {
+		return Session.builder()
+				.id(USER_ID).username(USERNAME)
 			.build();
 	}
 	
