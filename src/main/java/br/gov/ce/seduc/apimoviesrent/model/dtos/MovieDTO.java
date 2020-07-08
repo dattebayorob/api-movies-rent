@@ -36,6 +36,8 @@ public class MovieDTO {
 	@NotNull( message = "A Screen Writer must be informed" )
 	private LabelDTO screenwriter;
 	private Set<CastDTO> castings;
+	private Integer quantity;
+	private boolean availableForRent;
 	private boolean rented;
 	
 }
