@@ -13,14 +13,23 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@EqualsAndHashCode( of = { "id" } )
 @Table
 @Entity( name = "tb_people" )
 public class People {
+	
+	public People(Long id) {
+		this.id = id;
+	}
+	
 	@Id
 	@GeneratedValue(strategy = IDENTITY)
 	private Long id;

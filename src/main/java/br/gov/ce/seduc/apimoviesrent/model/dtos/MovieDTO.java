@@ -30,7 +30,7 @@ public class MovieDTO {
 	private String name;
 	@Default
 	@CollectionSizeRequired( min = 1, message = "At least one category must be informed" )
-	private Set<String> categories = emptySet();
+	private Set<LabelDTO> categories = emptySet();
 	@NotNull( message = "A director must be informed" )
 	private LabelDTO director;
 	@NotNull( message = "A Screen Writer must be informed" )
