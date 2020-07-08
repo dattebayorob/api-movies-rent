@@ -21,7 +21,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table
+@Table( name = "tb_movie" )
 public class Movie {
 	@Id
 	@GeneratedValue(strategy = IDENTITY)
@@ -36,11 +36,19 @@ public class Movie {
 	private People screenwriter;
 	@ManyToMany
 	@JoinTable( 
-		name = "movie_cast", 
+		name = "tb_movie_cast", 
 		joinColumns = @JoinColumn( name = "movie_id" ), 
 		inverseJoinColumns = @JoinColumn( name = "cast_id" )
 	)
 	private Set<People> castings;
+	
+	@ManyToMany
+	@JoinTable( 
+		name = "tb_movie_category", 
+		joinColumns = @JoinColumn( name = "movie_id" ), 
+		inverseJoinColumns = @JoinColumn( name = "categorie_id" )
+	)
+	private Set<Category> categories;
 	
 	@OneToMany( mappedBy = "id.movieId" )
 	private Set<MovieRent> rents;

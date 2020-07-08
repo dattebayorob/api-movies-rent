@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table
+@Table( name = "tb_user" )
 public class User {
 	@Id
 	@GeneratedValue( strategy = IDENTITY )

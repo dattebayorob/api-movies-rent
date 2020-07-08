@@ -9,5 +9,5 @@ import br.gov.ce.seduc.apimoviesrent.model.entities.pk.MovieRentPK;
 public interface MovieRentRepository extends JpaRepository<MovieRent, MovieRentPK>{
 	@Transactional( readOnly = true )
 	Integer countByIdMovieIdAndReturnDateIsNull( Long movieId );
-	boolean existesByIdMovieIdAndIdUserIdAndReturnDateIsNull( Long movieId, Long userId );
+	boolean existsByIdMovieIdAndIdUserIdAndReturnDateIsNull( Long movieId, Long userId );
 }

@@ -19,7 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode( of = { "id" } )
 @Entity
-@Table
+@Table( name = "tb_movie_rent" )
 public class MovieRent implements Serializable{
 	
 	private static final long serialVersionUID = -1532217232854719848L;

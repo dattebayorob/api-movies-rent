@@ -1,8 +1,8 @@
 package br.gov.ce.seduc.apimoviesrent.model.entities;
 
-import static javax.persistence.FetchType.LAZY;
 import static javax.persistence.GenerationType.IDENTITY;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -18,18 +18,23 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Table
-@Entity( name = "tb_people" )
-public class People {
+@Entity
+@Table( name = "tb_category" )
+public class Category implements Serializable{
+	private static final long serialVersionUID = 3955621708505840585L;
+
 	@Id
 	@GeneratedValue(strategy = IDENTITY)
 	private Long id;
+	
 	private String name;
-	@ManyToMany( fetch = LAZY )
+	
+	@ManyToMany
 	@JoinTable( 
-		name = "movie_cast", 
-		joinColumns = @JoinColumn( name = "cast_id" ), 
+		name = "tb_movie_category", 
+		joinColumns = @JoinColumn( name = "category_id" ), 
 		inverseJoinColumns = @JoinColumn( name = "movie_id" )
 	)
 	private Set<Movie> movies;
+	
 }
