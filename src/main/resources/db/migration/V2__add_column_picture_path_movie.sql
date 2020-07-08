@@ -1,0 +1,1 @@
+ALTER TABLE public.tb_movie ADD COLUMN picture_path varchar(255);
