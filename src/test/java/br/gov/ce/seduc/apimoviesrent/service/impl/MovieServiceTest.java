@@ -228,7 +228,7 @@ class MovieServiceTest {
 	private void commonMovieAvailabilityTest( Integer totalUnits, Consumer<Optional<MovieDTO>> assertion ) {
 		
 		final Integer totalRented = 4;
-		final MovieDTO movieDTO = MovieDTO.builder().id(MOVIE_ID).quantity(totalUnits).build();
+		final MovieDTO movieDTO = MovieDTO.builder().id(MOVIE_ID).rented(FALSE).quantity(totalUnits).build();
 		
 		when( movieRepository.findById( MOVIE_ID )).thenReturn( Optional.of(movie) );
 		when( movieMapper.toMovieDTO( movie )).thenReturn( movieDTO );

@@ -97,6 +97,9 @@ public class MovieServiceImpl implements MovieService{
 	
 	protected Function<MovieDTO, MovieDTO> mapAvailableForRent() {
 		return movie -> {
+			
+			if ( movie.isRented() ) return movie;
+			
 			final Integer quantityRented = movieRentService.countRentedByMovie( movie.getId() );
 			movie.setAvailableForRent(
 				!movie.getQuantity().equals( quantityRented )
