@@ -1,14 +1,12 @@
 package br.gov.ce.seduc.apimoviesrent.service.impl;
 
-import java.time.LocalDateTime;
-
-import org.springframework.stereotype.Service;
-
 import br.gov.ce.seduc.apimoviesrent.model.entities.MovieRent;
-import br.gov.ce.seduc.apimoviesrent.model.entities.pk.MovieRentPK;
 import br.gov.ce.seduc.apimoviesrent.model.repositories.MovieRentRepository;
 import br.gov.ce.seduc.apimoviesrent.service.MovieRentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +31,7 @@ public class MovieRentServiceImpl implements MovieRentService{
 
 	@Override
 	public void returnRent(Long movieId, Long userId) {
-		repository.findById( new MovieRentPK(movieId, userId) )
+		repository.findByIdMovieIdAndIdUserId( movieId, userId )
 			.ifPresent( movieRent -> {
 				movieRent.setReturnDate(LocalDateTime.now());
 				repository.save(movieRent);

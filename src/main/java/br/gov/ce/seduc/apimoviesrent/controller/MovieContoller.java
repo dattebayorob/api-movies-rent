@@ -85,8 +85,8 @@ public class MovieContoller {
 	}
 	
 	@DeleteMapping("{movieId}/rent")
-	public ResponseEntity<Void> returnMovie( @PathVariable("movieId") Long movieId, @RequestParam("userId") Long userId ) {
-		return movieService.returnMovie(movieId, userId)
+	public ResponseEntity<Void> returnMovie( @PathVariable("movieId") Long movieId ) {
+		return movieService.returnMovie(movieId, authService.activeSession().getId())
 				.map( movie -> new ResponseEntity<Void>(NO_CONTENT) )
 				.orElseGet( notFound()::build );
 	}
